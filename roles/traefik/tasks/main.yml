@@ -1,0 +1,85 @@
+- tags: traefik
+  block:
+    - name: Create traefik network
+      docker_network:
+        name: "{{ item.name }}"
+        ipam_config:
+          - subnet: "{{ item.subnet }}"
+      loop:
+        - { name: "{{ traefik_net }}", subnet: "{{ traefik_subnet }}"}
+        - { name: "{{ socket_net }}", subnet: "{{ socket_subnet }}"}
+
+    - name: Create working directory
+      file:
+        path: "{{ work_dir }}"
+        state: directory
+
+    - name: Create Crowdsec logs
+      file:
+        path: "{{ crowdsec_logs }}"
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: Create acme file
+      file:
+        path: "{{ work_dir }}/acme.json"
+        state: touch
+        mode: 0600
+
+    - name: Move files
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ work_dir }}"
+      loop:
+        - { src: "traefik.yml", dest: "{{ work_dir }}" }
+        - { src: "config.yml", dest: "{{ work_dir }}" }
+
+- tags: socket
+  block:
+    - name: Create socket proxy
+      docker_container:
+        name: dockersocket
+        image: tecnativa/docker-socket-proxy
+        state: started
+        recreate: yes
+        restart_policy: unless-stopped
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+          - name: "{{ socket_net }}"
+        env:
+          CONTAINERS: "1"
+          POST: "0"
+        privileged: true
+
+- tags: traefik
+  block:
+    - name: Create traefik
+      docker_container:
+        name: traefik
+        image: "traefik:{{ version }}"
+        state: started
+        recreate: yes
+        restart_policy: unless-stopped
+        published_ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+          - "{{ work_dir }}:/etc/traefik/"
+          - "{{ crowdsec_logs }}:{{ crowdsec_logs }}"
+        networks:
+          - name: "{{ traefik_net }}"
+            ipv4_address: "{{ traefik_ip }}"
+          - name: "{{ socket_net }}"
+        env:
+          DOCKER_HOST: dockersocket
+        labels:
+          # Dashboard
+          traefik.enable: "true"
+          traefik.http.routers.traefik.rule: Host(`{{ subdomain }}`)
+          traefik.http.routers.traefik.entryPoints: websecure
+          traefik.http.routers.traefik.service: api@internal
+          traefik.http.routers.traefik.tls.certresolver: letsencrypt
+          # Required for authentification with authelia
+          #traefik.http.routers.traefik.middlewares: authelia@file

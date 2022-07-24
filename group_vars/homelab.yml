@@ -1,6 +1,7 @@
 username:
 traefik_net:
 domain:
+authelia_domain: "auth.{{ domain }}"
 crowdsec_logs: /var/log/crowdsec/
 redis_pass:
 homelab_pass:

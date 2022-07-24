@@ -1,4 +1,4 @@
 - hosts: homelab
   become: true
   roles:
-    -
+    - traefik

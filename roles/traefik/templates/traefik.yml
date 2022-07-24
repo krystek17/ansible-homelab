@@ -1,0 +1,61 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: true
+
+serversTransport:
+  insecureSkipVerify: true
+
+entryPoints:
+  web:
+    address: ":80"
+
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        options: tls-opts@file
+
+      middlewares:
+        - securityHeaders@file
+        - crowdsec-bouncer@file
+        - rate-limiter@file
+        - https-redirect@file
+
+providers:
+  providersThrottleDuration: 2s
+
+  file:
+    filename: /etc/traefik/config.yml
+    watch: true
+
+  docker:
+    watch: true
+    network: "{{ traefik_net }}"
+    exposedByDefault: false
+    # Only if using socket proxy otherwise use "unix:///var/run/docker.sock"
+    endpoint: "tcp://dockersocket:2375"
+
+# Enable traefik dashboard
+api:
+  dashboard: true
+  insecure: false
+
+# Log level INFO|DEBUG|ERROR
+log:
+  level: INFO
+  filePath: "{{ crowdsec_logs }}/traefik.log"
+
+accessLog:
+  filePath: "{{ crowdsec_logs }}/access.log"
+  bufferingSize: 50
+
+# Use letsencrypt to generate ssl certificates
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: YOUR@EMAIL.BE
+      # staging server should first be used.
+      #caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+      storage: /etc/traefik/acme.json
+      httpChallenge:
+        entryPoint: web

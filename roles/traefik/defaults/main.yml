@@ -1,0 +1,8 @@
+work_dir: "/opt/traefik/"
+version: "v2.8.1"
+socket_net:
+logs: "{{ work_dir }}/logs"
+traefik_subnet:
+traefik_ip:
+socket_subnet:
+subdomain: "traefik.{{ domain }}"
