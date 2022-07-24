@@ -1,0 +1,6 @@
+username:
+traefik_net:
+domain:
+crowdsec_logs: /var/log/crowdsec/
+redis_pass:
+homelab_pass:
