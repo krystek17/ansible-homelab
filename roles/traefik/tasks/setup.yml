@@ -1,0 +1,36 @@
+- tags: traefik
+  block:
+    - name: Create traefik network
+      docker_network:
+        name: "{{ item.name }}"
+        ipam_config:
+          - subnet: "{{ item.subnet }}"
+      loop:
+        - { name: "{{ traefik_net }}", subnet: "{{ traefik_subnet }}"}
+        - { name: "{{ socket_net }}", subnet: "{{ socket_subnet }}"}
+
+    - name: Create working directory
+      file:
+        path: "{{ work_dir }}"
+        state: directory
+
+    - name: Create Crowdsec logs
+      file:
+        path: "{{ crowdsec_logs }}"
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: Create acme file
+      file:
+        path: "{{ work_dir }}/acme.json"
+        state: touch
+        mode: 0600
+
+    - name: Move files
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ work_dir }}"
+      loop:
+        - { src: "traefik.yml", dest: "{{ work_dir }}" }
+        - { src: "config.yml", dest: "{{ work_dir }}" }

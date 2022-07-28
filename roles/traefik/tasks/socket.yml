@@ -1,0 +1,18 @@
+- tags: socket
+  block:
+    - name: Create socket proxy
+      docker_container:
+        name: dockersocket
+        image: tecnativa/docker-socket-proxy
+        state: started
+        recreate: yes
+        restart_policy: unless-stopped
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+          - name: "{{ socket_net }}"
+        env:
+          CONTAINERS: "1"
+          POST: "1"
+          IMAGES: "1" # required by watchtower, portainer
+        privileged: true

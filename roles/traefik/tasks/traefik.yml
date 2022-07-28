@@ -1,0 +1,30 @@
+- tags: traefik
+  block:
+    - name: Create traefik
+      docker_container:
+        name: traefik
+        image: "traefik:{{ version }}"
+        state: started
+        recreate: yes
+        restart_policy: unless-stopped
+        published_ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+          - "{{ work_dir }}:/etc/traefik/"
+          - "{{ crowdsec_logs }}:{{ crowdsec_logs }}"
+        networks:
+          - name: "{{ traefik_net }}"
+            ipv4_address: "{{ traefik_ip }}"
+          - name: "{{ socket_net }}"
+        env:
+          DOCKER_HOST: dockersocket
+        labels:
+          # Dashboard
+          traefik.enable: "true"
+          traefik.http.routers.traefik.rule: Host(`{{ subdomain }}`)
+          traefik.http.routers.traefik.entryPoints: websecure
+          traefik.http.routers.traefik.service: api@internal
+          traefik.http.routers.traefik.tls.certresolver: letsencrypt
+          # Required for authentification with authelia
+          #traefik.http.routers.traefik.middlewares: authelia@file
