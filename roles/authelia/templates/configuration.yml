@@ -1,0 +1,88 @@
+###############################################################################
+#                           Authelia Configuration                            #
+###############################################################################
+
+## Note: the container by default expects to find this file at /config/configuration.yml.
+theme: dark
+jwt_secret: "{{ jwt_secret }}"
+default_redirection_url: "https://{{ domain }}"
+
+server:
+  host: 0.0.0.0
+  port: 9091
+  path: ""
+  read_buffer_size: 4096
+  write_buffer_size: 4096
+  enable_pprof: false
+  enable_expvars: false
+  disable_healthcheck: false
+  tls:
+    key: ""
+    certificate: ""
+    client_certificates: []
+
+log:
+  level: info
+  file_path: "{{ crowdsec_logs }}/authelia.log"
+  keep_stdout: true
+
+totp:
+  issuer: "{{ domain }}"
+  period: 30
+  skew: 1
+
+authentication_backend:
+    refresh_interval: 5m
+    file:
+      path: /config/users_database.yml
+      password:
+        algorithm: argon2id
+        iterations: 1
+        key_length: 32
+        salt_length: 16
+        memory: 1024
+        parallelism: 8
+
+access_control:
+  default_policy: deny
+  rules:
+    - domain: "{{ authelia_domain }}"
+      policy: bypass
+    ## catch-all
+    - domain:
+      - "*.{{ domain }}"
+
+      subject:
+        - "group:admins"
+      policy: two_factor
+
+session:
+  name: authelia_session
+  domain: "{{ domain }}"
+  same_site: lax
+  secret: "{{ session_secret }}"
+  expiration: 1h
+  inactivity: 5m
+  remember_me_duration: 2M
+  redis:
+    host: redis
+    port: 6379
+    password: "{{ redis_pass }}"
+    database_index: 0
+    maximum_active_connections: 10
+    minimum_idle_connections: 0
+
+regulation:
+  max_retries: 3
+  find_time: 10m
+  ban_time: 12h
+
+storage:
+  encryption_key: "{{ encryption_key }}"
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  disable_startup_check: false
+  filesystem:
+     filename: /config/notification.txt

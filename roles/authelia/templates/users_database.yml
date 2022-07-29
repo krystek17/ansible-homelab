@@ -1,0 +1,10 @@
+users:
+  john_doe:
+    displayname: "John Doe"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$em4wZUw4VytzaDV0aHpNZA$SW438N/EiWYeNm1+tt68WV3uhtiosAU7prhrdqLD410"
+    email: Yourmail@example.com
+    groups:
+      - admins
+        
+
+# to generate the hashed passworw run: docker run --rm authelia/authelia:latest authelia hash-password 'yourpassword'

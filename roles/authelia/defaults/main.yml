@@ -1,0 +1,13 @@
+work_dir: "/opt/authelia"
+version: 4.36
+authelia_ip:
+authelia_domain:
+
+# Please use ansible vault
+jwt_secret:
+
+session_secret:
+
+encryption_key:
+
+redis_pass:

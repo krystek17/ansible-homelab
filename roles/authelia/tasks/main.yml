@@ -1,0 +1,36 @@
+- name: Authelia
+  tags: authelia
+  block:
+    - name: Create working directory
+      file:
+        path: "{{ work_dir }}"
+        state: directory
+
+    - name: Move configs files
+      template:
+        src: "{{ item }}"
+        dest: "{{ work_dir }}"
+      loop:
+        - configuration.yml
+        - users_database.yml
+
+    - name: Install authelia
+      docker_container:
+        name: authelia
+        image: "authelia/authelia:{{ version }}"
+        state: started
+        recreate: yes
+        restart_policy: unless-stopped
+        exposed_ports:
+          - "9091"
+        volumes:
+          - "{{ work_dir }}:/config"
+          - "{{ crowdsec_logs }}:{{ crowdsec_logs }}"
+        networks:
+          - name: "{{ traefik_net }}"
+            ipv4_address: "{{ authelia_ip }}"
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.authelia.entryPoints: "websecure"
+          traefik.http.routers.authelia.rule: "Host(`{{ authelia_domain }}`)"
+          traefik.http.routers.authelia.tls.certresolver: "letsencrypt"
