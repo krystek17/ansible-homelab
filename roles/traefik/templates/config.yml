@@ -48,6 +48,7 @@ http:
         customResponseHeaders:
           X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex,"
           server: ""
+        #contentsecuritypolicy: "script-src 'self'"
 
 tls:
   options:
