@@ -1,0 +1,33 @@
+- tags: redis
+  block:
+  - name: Create docker volume
+    docker_volume:
+      name: redis
+      state: present
+
+  - name: Install redis
+    docker_container:
+      name: redis
+      image: "bitnami/redis:{{ version }}"
+      state: started
+      recreate: yes
+      restart_policy: unless-stopped
+      exposed_ports:
+        - "6379"
+      volumes:
+        - redis:/bitnami"
+      env:
+        REDIS_PASSWORD: "{{ redis_pass }}"
+      networks:
+        - name: "{{ traefik_net }}"
+          ipv4_address: "{{ redis_ip}}"
+
+  - name: Fix overcommit memory
+    lineinfile:
+      path: /etc/sysctl.conf
+      line: 'vm.overcommit_memory = 1'
+      insertbefore: BOF
+
+  - name: Enable vm memory
+    command: sysctl vm.overcommit_memory=1
+    notify: Restart Redis

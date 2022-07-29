@@ -1,0 +1,2 @@
+- name: Restart Redis
+  command: docker restart redis
