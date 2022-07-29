@@ -2,3 +2,5 @@
   become: true
   roles:
     - traefik
+    - redis
+    - authelia
