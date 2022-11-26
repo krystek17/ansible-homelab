@@ -1,0 +1,39 @@
+- tags: bouncer
+  block:
+    - name: Destroy container
+      docker_container:
+        name: bouncer-traefik
+        state: absent
+
+    - name: Create work directory
+      file:
+        state: directory
+        path: "{{ work_dir }}"
+
+    - name: Add bouncer
+      shell: "docker exec crowdsec cscli bouncers add traefik-bouncer | tail +3 | head -1 | sed 's/ //g' > {{ work_dir }}/api-key"
+
+    - name: Stored api key
+      command: "cat {{work_dir }}/api-key"
+      register: api_key
+
+    - name: Install traefik bouncer
+      docker_container:
+        name: bouncer-traefik
+        image: "fbonalair/traefik-crowdsec-bouncer:{{ traefik_bouncer_version }}"
+        state: started
+        recreate: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: "Europe/Brussels"
+          PGUID: "1000"
+          PGID: "1000"
+          CROWDSEC_BOUNCER_API_KEY: "{{ api_key.stdout }}"
+          CROWDSEC_AGENT_HOST: crowdsec:8080
+          GIN_MODE: release
+        networks:
+          - name: "{{ traefik_net }}"
+            ipv4_address: "{{ bouncer_ip }}"
+      notify:
+        - Restart crowdsec
+        - Restart traefik

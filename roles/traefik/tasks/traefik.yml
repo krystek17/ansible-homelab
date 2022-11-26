@@ -18,6 +18,9 @@
             ipv4_address: "{{ traefik_ip }}"
           - name: "{{ socket_net }}"
         env:
+          TZ: "Europe/Brussels"
+          PGUID: "1000"
+          PGID: "1000"
           DOCKER_HOST: dockersocket
         labels:
           # Dashboard
@@ -27,4 +30,4 @@
           traefik.http.routers.traefik.service: api@internal
           traefik.http.routers.traefik.tls.certresolver: letsencrypt
           # Required for authentification with authelia
-          #traefik.http.routers.traefik.middlewares: authelia@file
+          traefik.http.routers.traefik.middlewares: authelia@file

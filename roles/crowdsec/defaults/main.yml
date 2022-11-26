@@ -1,0 +1,4 @@
+work_dir: /opt/crowdsec
+version: v1.4.1
+auth_log: /var/log/auth.log
+crowdsec_ip: 

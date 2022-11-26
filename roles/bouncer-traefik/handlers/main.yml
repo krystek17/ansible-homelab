@@ -1,0 +1,8 @@
+- name: Restart crowdsec
+  command: docker restart crowdsec
+
+- name: Restart traefik
+  command: docker restart traefik
+
+- name: Restart traefik bouncer
+  command: docker restart bouncer-traefik

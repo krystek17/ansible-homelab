@@ -1,0 +1,14 @@
+work_dir: /opt/seafile
+seafile_ip: 
+mariadb_ip: 
+memcached_ip: 
+seafile_version: 9.0.6
+mariadb_version: 10.9
+memcached_version: 1.6-alpine
+subdomain: 
+
+mysql_password:
+
+seafile_email: 
+seafile_password: 
+

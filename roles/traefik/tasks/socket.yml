@@ -12,6 +12,9 @@
         networks:
           - name: "{{ socket_net }}"
         env:
+          TZ: "Europe/Brussels"
+          PGUID: "1000"
+          PGID: "1000"
           CONTAINERS: "1"
           POST: "1"
           IMAGES: "1" # required by watchtower, portainer

@@ -17,6 +17,9 @@
       volumes:
         - redis:/bitnami"
       env:
+        TZ: "Europe/Brussels"
+        PGUID: "1000"
+        PGID: "1000"
         REDIS_PASSWORD: "{{ redis_pass }}"
       networks:
         - name: "{{ traefik_net }}"

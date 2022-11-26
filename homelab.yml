@@ -4,3 +4,7 @@
     - traefik
     - redis
     - authelia
+    - crowdsec
+    - bouncer-traefik
+    - uptime
+    - seafile

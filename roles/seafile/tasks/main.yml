@@ -1,0 +1,82 @@
+- tags: seafile
+  block:
+    - name: Create directory
+      file:
+        path: "{{ work_dir }}"
+        state: directory
+
+    - name: Create mariadb
+      docker_container:
+        name: seafile-db
+        image: "mariadb:{{ mariadb_version }}"
+        state: started
+        recreate: yes
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ work_dir }}/db:/var/lib/mysql"
+        env:
+          TZ: "Europe/Brussels"
+          PGUID: "1000"
+          PGID: "1000"
+          MYSQL_ROOT_PASSWORD: "{{ mysql_password }}"
+          MYSQL_LOG_CONSOLE: "true"
+        networks:
+          - name: "{{ traefik_net }}"
+            ipv4_address: "{{ mariadb_ip }}"
+
+    - name: Create memcached
+      docker_container:
+        name: seafile-memcached
+        image: "memcached:{{ memcached_version }}"
+        state: started
+        recreate: yes
+        restart_policy: unless-stopped
+        entrypoint: memcached -m 256
+        env:
+          TZ: "Europe/Brussels"
+          PGUID: "1000"
+          PGID: "1000"
+        networks:
+          - name: "{{ traefik_net }}"
+            ipv4_address: "{{ memcached_ip }}"
+
+    - name: Create seafile
+      docker_container:
+        name: seafile
+        image: "seafileltd/seafile-mc:{{ seafile_version }}"
+        state: started
+        recreate: yes
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ work_dir }}/data:/shared"
+        env:
+          TZ: "Europe/Brussels"
+          PGUID: "1000"
+          PGID: "1000"
+          DB_HOST: seafile-db
+          DB_ROOT_PASSWD: "{{ mysql_password }}"
+          SEAFILE_ADMIN_EMAIL: "{{ seafile_email }}"
+          SEAFILE_ADMIN_PASSWORD: "{{ seafile_password }}"
+          SEAFILE_SERVER_LETSENCRYPT: "false"
+          SEAFILE_SERVER_HOSTNAME: "{{ subdomain }}"
+        networks:
+          - name: "{{ traefik_net }}"
+            ipv4_address: "{{ seafile_ip }}"
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.seafile.rule: Host(`{{ subdomain }}`)
+          traefik.http.routers.seafile.entryPoints: websecure
+          traefik.http.routers.seafile.tls.certresolver: letsencrypt
+          #traefik.http.middlewares.seafile-strip.stripprefix.prefixes: /seafhttp
+          #traefik.http.routers.seafile-http.middlewares: seafile-strip
+
+    - name: Cron cleanup
+      cron:
+        name: Freeing Space
+        weekday: "Sun"
+        minute: "0"
+        hour: "3"
+        job: "docker exec seafile /scripts/gc.sh"
+
+# https://forum.seafile.com/t/help-with-traefik-v2-labels/13868
+
