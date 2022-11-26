@@ -6,9 +6,6 @@ labels:
 ---
 filenames:
   - /var/log/auth.log
-  - /var/log/syslog
-  - /var/log/kern.log
-  - /var/log/ufw.log
 
 labels:
   type: syslog
