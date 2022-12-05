@@ -2,3 +2,4 @@ work_dir: /opt/uptime
 version: latest
 uptime_ip: 
 subdomain: 
+status:

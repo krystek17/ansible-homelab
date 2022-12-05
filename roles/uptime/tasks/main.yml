@@ -21,3 +21,8 @@
           traefik.http.routers.kuma.tls.certresolver: "letsencrypt"
           traefik.http.services.kuma.loadBalancer.server.port: "3001"
           traefik.http.routers.kuma.middlewares: authelia@file 
+          # Status page
+          traefik.http.routers.status.entryPoints: "websecure"
+          traefik.http.routers.status.rule: "Host(`{{ status }}`)"
+          traefik.http.routers.status.tls.certresolver: "letsencrypt"
+
