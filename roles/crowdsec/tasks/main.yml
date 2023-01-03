@@ -1,11 +1,6 @@
 - name: Install Crowdsec
   tags: crowdsec
   block:
-    - name: Clean work directory
-      file:
-        path: "{{ work_dir }}"
-        state: absent
-
     - name: Create working directory
       file:
         path: "{{ work_dir }}"
@@ -36,7 +31,7 @@
           TZ: "Europe/Brussels"
           PGUID: "1000"
           PGID: "1000"
-          COLLECTIONS: "crowdsecurity/linux crowdsecurity/traefik crowdsecurity/http-cve LePresidente/authelia"
+          COLLECTIONS: "crowdsecurity/linux crowdsecurity/traefik crowdsecurity/http-cve LePresidente/authelia crowdsecurity/whitelist-good-actors crowdsecurity/iptables crowdsecurity/sshd"
         networks:
           - name: "{{ traefik_net }}"
             ipv4_address: "{{ crowdsec_ip }}"
